@@ -1,0 +1,6 @@
+FROM nginx 
+RUN apt-get update && apt-get upgrade -y
+RUN rm -rf /usr/share/nginx/html
+COPY html /usr/share/nginx/
+EXPOSE 8080
+CMD ["nginx", "-g", "daemon off;"]

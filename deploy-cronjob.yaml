@@ -1,0 +1,73 @@
+# Apply With:
+# kubectl apply -f deploy-cronjob.yaml
+
+# Validate with:
+# kubectl get cronjob
+
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: cjob-restart-jira-pod
+  namespace: jira
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cjob-restart-jira-pod
+  namespace: jira
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "patch", "list", "watch", "delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cjob-restart-jira-pod
+  namespace: jira
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cjob-restart-jira-pod
+subjects:
+  - kind: ServiceAccount
+    name: cjob-restart-jira-pod
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cjob-restart-jira-pod
+  namespace: jira
+spec:
+  concurrencyPolicy: Forbid
+  schedule: "*/5 * * * *" # At every 5 minute
+#  schedule: "0 */3 * * *" # At minute 0 past every 6 hours
+#  schedule: "0 */3 * * *" # At every 3 am
+#  schedule: "0 */5 * * *" # At every 5 am
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 600
+      template:
+        spec:
+          serviceAccountName: cjob-restart-jira-pod
+          restartPolicy: Never
+          containers:
+            - name: kubectl
+              image: bitnami/kubectl
+              command: [ "/bin/sh", "-c" ]
+              args: 
+                - 'kubectl delete pod jira-0 -n jira'
+
+#https://crontab.guru/every-5-minutes
+#kubectl rollout restart statefulset <statefulset-name>
+#kubectl get cronjob cjob-restart-jira-pod -n jira 
+#kubectl delete cronjob cjob-restart-jira-pod -n jira
+#pods=$(kubectl get pods --selector=job-name=hello-4111706356 --output=jsonpath={.items[*].metadata.name})
+#kubectl run jira-0 --image=nginx --restart=Never --port=80 -n jira 
+# - 'kubectl delete pod -n jira $(kubectl get pod -n jira -o jsonpath="{.items[0].metadata.name}")'
+#https://refine.dev/blog/kubernetes-cron-jobs/#how-to-access-and-interpret-logs-generated-by-cronjobs

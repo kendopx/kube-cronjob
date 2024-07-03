@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cjob-restart-jira-pod
+  namespace: jira 
+spec:
+  schedule: "0 */5 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: task
+              image: busybox
+              command:
+                - /bin/sh
+                - -c
+                # - kubectl delete pod nginx-pod -n homesite
+                - for i in `kubectl get pod -n jira| grep homesite`; do kubectl delete pod $i -n homesite; done 
+
+### kubectl get cronjob -n jira
+### kubectl logs cronjob restart-jira-n jira
+### kubectl logs cronjob.batch/cjob-restart-jira-n jira
+### https://stackoverflow.com/questions/71147584/trying-to-create-a-script-to-look-for-pods-in-0-1-status-for-more-than-20-mins
+
