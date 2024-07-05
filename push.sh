@@ -5,6 +5,6 @@ read commit_message
 
 git add -A
 git commit -m "$commit_message"
-git push origin solomon-rke2-downstream-cluster
+git push origin main
 
 
