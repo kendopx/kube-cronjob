@@ -1,27 +1,43 @@
+
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: cjob-restart-jira-pod
-  namespace: jira 
+  namespace: jira
+  name: cjob-restart-jira-pod-6
 spec:
   schedule: "*/2 * * * *"
   jobTemplate:
     spec:
       template:
         spec:
-          restartPolicy: OnFailure
           containers:
-            - name: task
-              image: busybox
-              command:
-                - /bin/sh
-                - -c
-                # - kubectl delete pod nginx-pod -n homesite
-                - for i in `kubectl get pod jira-0 --no-headers -n jira | grep "0/1" | awk {'print $1'}`; do kubectl delete pod $i -n jira; done 
+          - name: cjob-restart-jira-pod-6
+            image: busybox:1.28
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - for i in `kubectl get pod confluence-0 --no-headers -n jira | grep "0/1" | awk {'print $1'}`; do kubectl delete pod $i -n jira; done 
+            - for i in `kubectl get pod --no-headers -n jira | grep "1/1" | grep nginx | awk {'print $1'}`; do kubectl delete pods $i -n jira; done 
 
+          restartPolicy: OnFailure
+
+
+#### kubectl -n jira get jobs --watch
+### kubectl logs 
 ### kubectl get cronjob -n jira
 ### kubectl logs cronjob restart-jira-n jira
 ### kubectl logs cronjob.batch/cjob-restart-jira-n jira
 ### https://stackoverflow.com/questions/71147584/trying-to-create-a-script-to-look-for-pods-in-0-1-status-for-more-than-20-mins
 
 ### kubectl -n jira create deployment nginx --image=nginx:1.23 --replicas=5
+
+  kubectl -n jira create cronjob 1-cjob-restart-jira-pod --image=busybox --schedule="*/1 * * * *" -- for i in `kubectl get pod --no-headers -n jira | grep "1/1" | grep nginx | awk {'print $1'}`; do kubectl delete pods $i -n jira; done
+
+
++ kubectl get pod --no-headers -n jira
+nginx-544b767cbb-8tk5c
+nginx-544b767cbb-9cdzc
+nginx-544b767cbb-9w4nh
+nginx-544b767cbb-g7jhs
+nginx-544b767cbb-xrngd
