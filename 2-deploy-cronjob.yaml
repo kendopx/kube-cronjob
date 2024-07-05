@@ -4,7 +4,7 @@ metadata:
   name: cjob-restart-jira-pod
   namespace: jira 
 spec:
-  schedule: "0 */5 * * *"
+  schedule: "*/2 * * * *"
   jobTemplate:
     spec:
       template:
@@ -17,7 +17,7 @@ spec:
                 - /bin/sh
                 - -c
                 # - kubectl delete pod nginx-pod -n homesite
-                - for i in `kubectl get pod -n jira| grep homesite`; do kubectl delete pod $i -n homesite; done 
+                - for i in `kubectl get pod jira-0 --no-headers -n jira | grep "0/1" | awk {'print $1'}`; do kubectl delete pod $i -n jira; done 
 
 ### kubectl get cronjob -n jira
 ### kubectl logs cronjob restart-jira-n jira

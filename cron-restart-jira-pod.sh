@@ -1,4 +1,4 @@
-BAD_PODS=`kubectl get pods --no-headers -n homesite | grep "0/1" | awk {'print $1'}`
+BAD_PODS=`kubectl get pods --no-headers -n jira | grep "0/1" | awk {'print $1'}`
 if [ -z "$BAD_PODS" ]; then
     log "No Pod in Not Ready state"
 else
@@ -17,3 +17,8 @@ fi
 fi
 
 ### BAD_PODS=`kubectl get pods --context ${EKS_CLUSTER_NAME} | grep "0/1" | awk {'print $1'}`
+# kubectl -n jira create deployment nginx --image=nginx:1.23 --replicas=5
+# kubectl get pod jira 
+# kubectl get pod -n jira 
+
+# for kubectl get pods --no-headers -n jira | grep "0/1" | awk {'print $1'}
