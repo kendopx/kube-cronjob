@@ -24,3 +24,4 @@ spec:
 ### kubectl logs cronjob.batch/cjob-restart-jira-n jira
 ### https://stackoverflow.com/questions/71147584/trying-to-create-a-script-to-look-for-pods-in-0-1-status-for-more-than-20-mins
 
+### kubectl -n jira create deployment nginx --image=nginx:1.23 --replicas=5
